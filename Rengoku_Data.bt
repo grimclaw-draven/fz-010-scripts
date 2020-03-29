@@ -22,9 +22,9 @@ uint32 FirstMonsterID;
 uint32 FirstMonsterVariant;
 uint32 SecondMonsterID;
 uint32 SecondMonsterVariant;
-uint32 SpawnWeighting;
 uint32 MonstersStatTable;
 uint32 MapZoneOverride;
+uint32 SpawnWeighting;
 uint32 AdditionalFlag;
 }SpawnTable;
 
