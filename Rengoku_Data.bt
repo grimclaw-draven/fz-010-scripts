@@ -1,0 +1,114 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.1 Binary Template
+//
+//      File: Rengoku_Data.bt
+//   Authors: Fist
+//   Version: 1
+//   Purpose: Parse rengoku
+//  Category: Road
+//   History: 29/03/2020 : Initial Release
+//------------------------------------------------
+typedef struct{
+uint32 FloorStatsCount;
+uint32 SpawnCountCount;
+uint32 SpawnTablePointersCount;
+uint32 FloorStatsPointer;
+uint32 SpawnTablePointers;
+uint32 SpawnCountPointers;
+}RoadMode;
+    
+typedef struct{
+uint32 FirstMonsterID;
+uint32 FirstMonsterVariant;
+uint32 SecondMonsterID;
+uint32 SecondMonsterVariant;
+uint32 SpawnWeighting;
+uint32 MonstersStatTable;
+uint32 MapZoneOverride;
+uint32 AdditionalFlag;
+}SpawnTable;
+
+typedef struct{
+uint32 FloorNumber;
+uint32 SpawnTableUsed;
+uint32 Unk0;
+float PointMulti1;
+float PointMulti2;
+uint32 FinalLoop;
+}FloorStats;
+
+LittleEndian();
+
+
+FSeek(0x14);
+SetBackColor( 0xFFFF00FF );
+RoadMode multiDef;
+SetBackColor( 0xFFFFBBFF );
+RoadMode soloDef;
+
+SetBackColor( 0xFFFF0000 );
+
+struct{
+local int i;
+struct{
+    for(i = 0; i < multiDef.SpawnTablePointersCount; i++){
+        struct{
+        FSeek(multiDef.SpawnTablePointers + (i*4));
+        uint32 tablePointer;
+        FSeek(multiDef.SpawnCountPointers + (i*4));
+        uint32 entryCount;
+        local int x;
+            struct{
+                FSeek(tablePointer);
+                for(x = 0; x < entryCount; x++){
+                    SpawnTable spawn;
+                } 
+            }spawns;
+        
+        }TableEntry;
+        FSeek(multiDef.SpawnTablePointers);
+    }
+} spawnTables;
+
+SetBackColor( 0xFFAA0000 );
+
+FSeek(multiDef.FloorStatsPointer);
+struct{
+for(i = 0; i < multiDef.FloorStatsCount; i++){
+    FloorStats floorStats;
+}
+} statTables;
+}multiRoad;
+
+SetBackColor( 0xFF0000FF );
+FSeek(0);
+struct{
+local int i;
+struct{
+    for(i = 0; i < soloDef.SpawnTablePointersCount; i++){
+        struct{
+        FSeek(soloDef.SpawnTablePointers + (i*4));
+        uint32 tablePointer;
+        FSeek(soloDef.SpawnCountPointers + (i*4));
+        uint32 entryCount;
+        local int x;
+            struct{
+                FSeek(tablePointer);
+                for(x = 0; x < entryCount; x++){
+                    SpawnTable spawn;
+                } 
+            }spawns;
+        
+        }TableEntry;
+        FSeek(soloDef.SpawnTablePointers);
+    }
+} spawnTables;
+
+SetBackColor( 0xFF0033AA );
+FSeek(soloDef.FloorStatsPointer);
+struct{
+for(i = 0; i < soloDef.FloorStatsCount; i++){
+    FloorStats floorStats;
+}
+} statTables;
+}soloRoad;
