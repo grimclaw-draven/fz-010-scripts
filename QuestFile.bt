@@ -276,8 +276,8 @@ typedef struct {
 typedef struct LargeMonsterSpawn {
     MonsterID monster;
     FSkip(3);// adjust for other values being int16s
+    uint32 spawnAmount;
     uint32 spawnStage;
-    uint32 Unk1;
     FSkip(16); // null in working example
     uint32 Unk2;
     float xPos;
@@ -316,17 +316,33 @@ struct{
     uint32 subBRankPoints;
     uint32 unk2;
     FSkip(1);
-byte statTable2;
-}basicQuestProprerties;
+    byte statTable2; // not always stats, 06 on zenith anoru
 
 
 // Extended Quest Properties
-FSeek(192);
+
 SetBackColor( 0xFFFF5555 );
-struct GenQuestProp{
+
+FSeek(120);
+struct
+{
+    uint16 gatheringTablesQty;
+    uint16 unk0;
+    byte area1zones;
+    byte area2zones;
+    byte area3zones;
+    byte area4zones;
+} quantity;
+
+} genQuestProp;
+
+FSeek(192);
+SetBackColor( 0xFFFF0000 );
+struct{
     byte Unk0;
     byte Unk1;
-    uint16 Unk2;
+    byte questLocaleFlags;
+    byte Unk2;
     byte rankingID;
     byte Unk3;
     uint16 Unk4;  
@@ -336,7 +352,8 @@ struct GenQuestProp{
     uint32 rewardMain;
     uint32 rewardA;
     uint32 rewardB;
-FSkip(4);
+FSkip(2);
+    uint16 hardHunterRankReq;
     uint32 QuestTime;
     uint32 QuestMap;
     uint32 QuestStringsPtr;
@@ -352,21 +369,12 @@ FSkip(4);
     } objectives;
     byte unk6;
     byte unk7;
-    uint16 RankBand1;
-    uint16 Unk2;
-    uint32 RankBand2;
-} genQuestProp;
+    uint16 JoinRankMin;
+    uint16 JoinRankMax;
+    uint16 PostRankMin;
+    uint16 PostRankMax;
+} mainQuestProp;
 
-FSeek(120);
-struct
-{
-    uint16 gatheringTablesQty;
-    uint16 unk0;
-    byte area1zones;
-    byte area2zones;
-    byte area3zones;
-    byte area4zones;
-} quantity;
 
 // Quest Objectives
 FSeek(240);
@@ -374,7 +382,7 @@ SetBackColor( 0xFF00FF55 );
 
 
 
-if(genQuestProp.objectives.objective1.questObj == Slay_All){
+if(mainQuestProp.objectives.objective1.questObj == Slay_All){
     // Interception Settings
     FSeek(374);
     SetBackColor( 0xFFFF00BB );
@@ -394,18 +402,71 @@ if(genQuestProp.objectives.objective1.questObj == Slay_All){
 FSeek(336);
 SetBackColor( 0xFF2222FF );
 struct Variants{
+SetBackColor( 0xFF220088 );
     byte monsterVariant0;
     byte monsterVariant1;
     byte monsterVariant2;
-    FSkip(4);
+    byte mapVariant0;
+    uint16 requiredItemType;
+    byte requiredItemCount;
     byte questVariant1;
     byte questVariant2;
     byte questVariant3;
     byte questVariant4;
-} variants<size=10>;
 
-FSeek(368);
+FSeek(388);
+    uint32 questClearsAllowed;
+    byte questMonsterIcon; // just standard id 
+
+} variants<size=10>;
+FSeek(284);
+struct ForcedEquipment{
+SetBackColor( 0xFF00FF00 );
+uint16 legs;
+uint16 legsAttach1; // +0x80 for some reason
+uint16 legsAttach2; // +0x80 for some reason
+uint16 legsAttach3; // +0x80 for some reason
+SetBackColor( 0xFF00DD00 );
+uint16 weapon;
+uint16 weaponAttach1orBitmask;
+uint16 weaponAttach2;
+uint16 weaponAttach3;
+SetBackColor( 0xFF00FF00 );
+uint16 head;
+uint16 headAttach1; // +0x80 for some reason
+uint16 headAttach2; // +0x80 for some reason
+uint16 headAttach3; // +0x80 for some reason
+SetBackColor( 0xFF00DD00 );
+uint16 chest;
+uint16 chestAttach1; // +0x80 for some reason
+uint16 chestAttach2; // +0x80 for some reason
+uint16 chestAttach3; // +0x80 for some reason
+SetBackColor( 0xFF00FF00 );
+uint16 arms;
+uint16 armsAttach1; // +0x80 for some reason
+uint16 armsAttach2; // +0x80 for some reason
+uint16 armsAttach3; // +0x80 for some reason
+SetBackColor( 0xFF00DD00 );
+uint16 waist;
+uint16 waistAttach1; // +0x80 for some reason
+uint16 waistAttach2; // +0x80 for some reason
+uint16 waistAttach3; // +0x80 for some reason
+
+SetBackColor( 0xFFAA0000 );
+uint32 unk;
+
+FSkip(10); // variant data here for whatever reasons
+uint32 allowedEquipmentBitmask; // FF7F for none
+}equipment;
+
 struct RewardsFocus{
+    FSeek(352);
+    SetBackColor( 0xFFDD00DD );
+    uint32 unk;
+    SetBackColor( 0xFF00DD00 );
+    uint16 GRP;
+
+    FSeek(368);   
     uint16 item1;
     uint16 item2;
     uint16 item3;
@@ -508,7 +569,7 @@ struct MapZones{
                 {
                     FSkip(4);
                     SetBackColor( 0xFF00FF50 );
-                    uint16 skyBox;
+                    uint16 unk; // maybe skybox
                     break;
                 };
             };
@@ -588,7 +649,7 @@ struct{
     };
 } gatheringTables;
 
-FSeek(genQuestProp.QuestStringsPtr);
+FSeek(mainQuestProp.QuestStringsPtr);
 struct{
     uint32 questTitle;
     uint32 questMain;
@@ -598,13 +659,29 @@ struct{
     uint32 questFailReqs;
     uint32 questContractor;
     uint32 questDescription;
+
+    FSeek(questTitle);
+    string questTitleString;
+    FSeek(questMain);
+    string questMainString;
+    FSeek(questA);
+    string questAString;
+    FSeek(questB);
+    string questBString;
+    FSeek(questClearReqs);
+    string questClearReqsString;
+    FSeek(questFailReqs);
+    string questFailReqsString;
+    FSeek(questContractor);
+    string questContractorString;
+    FSeek(questDescription);
+    string questDescriptionString;
 }stringPointers;
 
 FSeek(header.areaFloats);
 typedef struct {
     if(ReadUInt() == 4294967295) break;
     uint32 stageId;
-    Printf("%u hello",i);
     while(i != 4294967295){
         float floatVal;
         i = ReadUInt();
@@ -614,7 +691,7 @@ typedef struct {
 struct perAreaFloats{
     local int i;
     local int seek;
-    for(i = 0; i < quantity.area1zones; i++)
+    for(i = 0; i < genQuestProp.quantity.area1zones; i++)
     {
         if(ReadUInt() == 0) break;
         seek = FTell();
